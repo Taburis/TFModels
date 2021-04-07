@@ -15,18 +15,20 @@ class cfg_base(Mapping):
             ins.__setattr__( key, value)
         return ins
     
+    def update(self, dicts):
+        for key, val in dicts.items():
+            self.__setattr__( key, value)
+        return self.__dict__
+    
     def __iter__(self):
         for key in self.__dict__.keys():
             yield key
-    
+        
     def __len__(self):
         return len(self.__dict__)
     
     def __getitem__(self, item):
         return self.__dict__[item]
-    
-    def decoration(self):
-        return self.id, self.decorator(self)
     
     def __call__(self, **kwargs):
         for key, value in kwargs.items():
