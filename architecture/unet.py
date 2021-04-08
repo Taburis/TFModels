@@ -82,8 +82,8 @@ class module_unet(tf.keras.layers.Layer):
         drop_rate = self.cfg_unet.drop_rate
         
         for i in range(len(self.cfg_unet.up_stream)):
-            layer_up[i]   = xblocks.sequential_conv2d(cfg_up[i], trainable)
-            layer_down[i] = xblocks.sequential_conv2d(cfg_down[i], trainable)
+            layer_up[i]   = xblocks.sequential_conv2d(cfg_up[i], trainable=True)
+            layer_down[i] = xblocks.sequential_conv2d(cfg_down[i], trainable=True)
 
     def mlv_features(self):
         return self.multi_level_features
