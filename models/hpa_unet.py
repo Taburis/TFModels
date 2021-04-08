@@ -18,17 +18,18 @@ class hpa_unet(object):
         self.feature_extractor = unet.module_unet(root_feature = 32, keep_multi_level_features = False)
         self.feature_extractor.build()
         self.head_classifier = xheads.classifier_CAM_2D(nclass = 20)
-        self.segmentation = self.keras.layers.Conv2D(filters = 2, kernel_size = (3,3),
+        self.segmentation = tf.keras.layers.Conv2D(filters = 2, kernel_size = (3,3),
                                                      strides = 1,
                                                      padding = 'same',
                                                      use_bias = False,
                                                      name = 'hpa-unet-seg-head')
 
     def build(self, trainable = True):
-        inputs = tf.Input(shape = self.input_shape)
+        inputs = tf.keras.Input(shape = self.input_shape)
         x = self.feature_extractor(inputs)
         seg_pred = self.segmentation(x)
-        x = tf.stack([seg_pred, inputs[...,3]])
+        signal_channel = tf.expand_dims(inputs[...,3],axis = 3)
+        x = tf.concat([seg_pred, signal_channel], axis = 3)
         cls_pred = self.head_classifier(x)
         outputs = [cls_pred, seg_pred]
         self.nn = tf.keras.Model(inputs = x, outputs = outputs, name=self.name, trainable=True)

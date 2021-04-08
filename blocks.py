@@ -33,6 +33,6 @@ def sequential_conv2d(cfg, trainable = True):
         for i in range( nlayer):
             x = tf.keras.layers.Conv2D(**cfg_conv2d)(x)
         if use_residual : 
-            x = xlayers.residual2D_layer(trainable = trainable)(shortcut, x)
+            x = xlayers.residual2D(trainable = trainable)(shortcut, x)
         return x
     return sequential_conv2d_imp

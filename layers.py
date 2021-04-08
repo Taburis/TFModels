@@ -15,7 +15,7 @@ class residual2D(tf.keras.layers.Layer):
     def __init__(self, 
                  use_projection = False,
                  trainable = None, **kwargs):
-        super(residual2D_layer, self).__init__(self, **kwargs)
+        super(residual2D, self).__init__(self, **kwargs)
         self.use_projection = use_projection
         self.trainable = trainable
         

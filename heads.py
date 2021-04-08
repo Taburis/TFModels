@@ -15,16 +15,15 @@ class classifier_CAM_2D(tf.keras.layers.Layer):
     """
     def __init__(self, nclass, activation = 'softmax', **kwarg):
         super(classifier_CAM_2D, self).__init__(**kwarg)
-        self.trainable = trainable
         self.nclass = nclass
-        self.actiavtion = activation
+        self.activation = activation
         self.layer_average = tf.keras.layers.GlobalAveragePooling2D()
-        self.layer_dense = tf.keras.Dense(units = nclass, use_bias = False, activation=self.activation)
-        self.layer_heatmap = tf.keras.layers.Conv2D(nfilters = ncalss, 
+        self.layer_dense = tf.keras.layers.Dense(units = nclass, use_bias = False, activation=self.activation)
+        self.layer_heatmap = tf.keras.layers.Conv2D(filters = nclass, 
                 kernel_size=1, strides=1, use_bias = False, trainable = False)
 
     def call(self, inputs):
-        x = self.layer_averge(inputs)
+        x = self.layer_average(inputs)
         x = self.layer_dense(x)
         return x
 
