@@ -2,7 +2,7 @@
 import layers as xlayers
 import tensorflow as tf
 
-def sequential_block(nlayer, module, cfg, trainable):
+def sequential_block(nlayer, module, cfg, trainable = True):
     """ stacks sub-blocks to form a new sequential blocks
     """
     module_fn = module(cfg, trainable)	
@@ -13,7 +13,7 @@ def sequential_block(nlayer, module, cfg, trainable):
         return x
     return sequential_block_imp
 
-def sequential_conv2d(cfg, trainable):
+def sequential_conv2d(cfg, trainable = True):
     """stacked 2D convolution layers
     cfg {
         conv2d : 'dict', conv2d configuration;
