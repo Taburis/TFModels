@@ -32,7 +32,7 @@ class hpa_unet(object):
         x = tf.concat([seg_pred, signal_channel], axis = 3)
         cls_pred = self.head_classifier(x)
         outputs = [cls_pred, seg_pred]
-        self.nn = tf.keras.Model(inputs = x, outputs = outputs, name=self.name, trainable=True)
+        self.nn = tf.keras.Model(inputs = inputs, outputs = outputs, name=self.name, trainable=True)
 
     def __call__(self, inputs):
         return self.nn(inputs)

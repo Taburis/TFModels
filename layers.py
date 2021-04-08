@@ -29,13 +29,13 @@ class residual2D(tf.keras.layers.Layer):
         shortcut = x
         nfilter = r.shape[dim]
         if not r.shape[dim] == x.shape[dim] : 
-        	self.use_projection = True
+            self.use_projection = True
         if self.use_projection : 
             self.layer = tf.keras.layers.Conv2D(filters = nfilter, kernel_size = 1, strides = 1, padding = 'valid', trainable = self.trainable)
             shortcut = self.layer(x)
 #   print('filters for shortcut: ', nfilter, shortcut.shape[dim])
         return shortcut + r
-    
+ 
     def get_config(self):
         return {'use_projection':self.use_projection, 'trainable':self.trainable}
 
