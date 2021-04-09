@@ -18,6 +18,12 @@ class residual2D(tf.keras.layers.Layer):
         super(residual2D, self).__init__(self, **kwargs)
         self.use_projection = use_projection
         self.trainable = trainable
+        self.project_layer = tf.keras.layers.Conv2D(
+            filters = nfilter, 
+            kernel_size = 1, 
+            strides = 1, 
+            padding = 'valid', 
+            trainable = self.trainable)
         
     def call(self, x, r, dim = 3):
         """
@@ -31,8 +37,7 @@ class residual2D(tf.keras.layers.Layer):
         if not r.shape[dim] == x.shape[dim] : 
             self.use_projection = True
         if self.use_projection : 
-            self.layer = tf.keras.layers.Conv2D(filters = nfilter, kernel_size = 1, strides = 1, padding = 'valid', trainable = self.trainable)
-            shortcut = self.layer(x)
+            shortcut = self.project_layer(x)
 #   print('filters for shortcut: ', nfilter, shortcut.shape[dim])
         return shortcut + r
  

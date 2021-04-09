@@ -22,7 +22,7 @@ class classifier_CAM_2D(tf.keras.layers.Layer):
         self.layer_heatmap = tf.keras.layers.Conv2D(filters = nclass, 
                 kernel_size=1, strides=1, use_bias = False, trainable = False)
 
-    def call(self, inputs):
+    def __call__(self, inputs):
         x = self.layer_average(inputs)
         x = self.layer_dense(x)
         return x
@@ -38,7 +38,7 @@ class classifier_CAM_2D(tf.keras.layers.Layer):
 
     def get_config(self):
         config=super(classifier_CAM_2D, self).get_config()
-        config.update({ 'nclass':nclass, 'activation':activation})
+        config.update({ 'nclass':self.nclass, 'activation':self.activation})
         return config
 
 
