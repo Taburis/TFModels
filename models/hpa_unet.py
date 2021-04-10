@@ -21,7 +21,8 @@ class hpa_unet(object):
         self.segmentation = tf.keras.layers.Conv2D(filters = 1, kernel_size = (3,3),
                                                      strides = 1,
                                                      padding = 'same',
-                                                     use_bias = False,
+                                                     use_bias = True,
+                                                     activation = 'sigmoid',
                                                      name = 'hpa-unet-seg-head')
 
     def build(self, trainable = True):
