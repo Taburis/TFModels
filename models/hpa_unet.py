@@ -17,8 +17,8 @@ class hpa_unet(object):
         self.input_shape = input_shape
         self.feature_extractor = unet.module_unet(root_feature = 32, keep_multi_level_features = False)
         self.feature_extractor.build()
-        self.head_classifier = xheads.classifier_CAM_2D(nclass = 20, activation ='sigmoid')
-        self.segmentation = tf.keras.layers.Conv2D(filters = 2, kernel_size = (3,3),
+        self.head_classifier = xheads.classifier_CAM_2D(nclass = 20, activation ='sigmoid', name = 'hpa-unet-cls-head')
+        self.segmentation = tf.keras.layers.Conv2D(filters = 1, kernel_size = (3,3),
                                                      strides = 1,
                                                      padding = 'same',
                                                      use_bias = False,
@@ -29,12 +29,10 @@ class hpa_unet(object):
         x = self.feature_extractor(inputs)
         seg_pred = self.segmentation(x)
         signal_channel = tf.expand_dims(inputs[...,3],axis = 3)
-        x = tf.concat([seg_pred, signal_channel], axis = 3)
+        x = tf.concat([x, signal_channel], axis = 3)
         cls_pred = self.head_classifier(x)
         #outputs = [cls_pred, seg_pred]
-        self.nn = tf.keras.Model(inputs = inputs, outputs = [seg_pred, cls_pred], name=self.name, trainable=True)
+        self.nn = tf.keras.Model(inputs = inputs, outputs = {'mask':seg_pred, 'label':cls_pred}, name=self.name, trainable=True)
 
     def __call__(self, inputs):
         return self.nn(inputs)
-
-     
