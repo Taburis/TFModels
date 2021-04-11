@@ -12,18 +12,21 @@ import heads as xheads
 from copy import copy
 
 class hpa_unet(object):
-    def __init__(self, name = 'hpa_unet', input_shape = (1024, 1024, 4)):
+    def __init__(self, name = 'hpa_unet', cls_activation = 'sigmoid', seg_activation = 'softmax', input_shape = (1024, 1024, 4)):
         self.name = name
         self.input_shape = input_shape
         self.feature_extractor = unet.module_unet(root_feature = 32, keep_multi_level_features = False)
         self.feature_extractor.build()
-        self.head_classifier = xheads.classifier_CAM_2D(nclass = 20, activation ='sigmoid', name = 'hpa-unet-cls-head')
-        self.segmentation = tf.keras.layers.Conv2D(filters = 1, kernel_size = (3,3),
-                                                     strides = 1,
-                                                     padding = 'same',
-                                                     use_bias = True,
-                                                     activation = 'softmax',
-                                                     name = 'hpa-unet-seg-head')
+        self.head_classifier = xheads.classifier_CAM_2D(nclass = 20, 
+                                                        activation =cls_activation, 
+                                                        name = 'hpa-unet-cls-head')
+        self.segmentation = tf.keras.layers.Conv2D(filters = 1, 
+                                                   kernel_size = (3,3),
+                                                   strides = 1,
+                                                   padding = 'same',
+                                                   use_bias = True,
+                                                   activation = seg_activation,
+                                                   name = 'hpa-unet-seg-head')
 
     def build(self, trainable = True):
         inputs = tf.keras.Input(shape = self.input_shape)
