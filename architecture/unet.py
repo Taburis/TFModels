@@ -22,6 +22,7 @@ from copy import copy
 
 class module_unet(tf.keras.layers.Layer):
     def __init__(self, root_feature = 64, nsublayer_conv2d = 2, nlevel = 4, 
+                 drop_rate = 0.0,
                  keep_multi_level_features= False, **kwarg):
         """default U-net 
             nsublayers: how many conv2d in each depth
@@ -63,7 +64,7 @@ class module_unet(tf.keras.layers.Layer):
         
         self.cfg_unet = cfgb.cfg_base( up_stream = cfg_up, down_stream=cfg_down,
                     cfg_top = cfg_top, root_feature = self.root_feature, nlevel = nlevel,
-                    drop_rate = 0.1)
+                    drop_rate = drop_rate)
        
     def build(self):
         """ 2D residual network template
