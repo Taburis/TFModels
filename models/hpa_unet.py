@@ -22,7 +22,7 @@ class hpa_unet(object):
                                                      strides = 1,
                                                      padding = 'same',
                                                      use_bias = True,
-                                                     activation = 'sigmoid',
+                                                     activation = 'softmax',
                                                      name = 'hpa-unet-seg-head')
 
     def build(self, trainable = True):
