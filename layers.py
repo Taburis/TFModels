@@ -113,3 +113,4 @@ class batch_norm_activation(tf.keras.layers.Layer):
           inputs = self._activation_op(inputs)
         return inputs
 
+

@@ -36,3 +36,4 @@ def sequential_conv2d(cfg, trainable = True):
             x = xlayers.residual2D(trainable = trainable)(shortcut, x)
         return x
     return sequential_conv2d_imp
+
