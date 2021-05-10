@@ -5,6 +5,10 @@ import ops.tensor_ops as tops
 
 EPSILON = 1e-8 # a constant used to approximate the infinity small in math
 
+"""
+Bounding box collections used by sliding window methods generally.
+"""
+
 def area(box):
     """Computes area of boxes.
     B: batch_size
@@ -19,7 +23,7 @@ def area(box):
             value=box, num_or_size_splits=4, axis=-1)
         return tf.squeeze((y_max - y_min) * (x_max - x_min), axis=-1)
 
-def intersection(box1, box2):
+def intersection(box1, box2, dtype = 'float32'):
     """
     input box1 or box2 : a float Tensor with [N, 4], or [B, N, 4]
     """
