@@ -5,9 +5,8 @@ from __future__ import print_function
 
 import cfg_base as cfgb
 import tensorflow as tf
-import module.Unet as unet
-import module.RetinaNet as rn
-import heads as xheads 
+from module import Unet as unet
+from module import RetinaNet as rn
 from copy import copy
 
 class hpa_unet(tf.keras.Model):
