@@ -95,13 +95,15 @@ class unet(tf.keras.layers.Layer):
             uptensor[i] = x
             x = tf.keras.layers.MaxPool2D()(x)
         x = self.layer_top(x)
+        if self.keep_multi_level_features:
+            self.multi_level_features[0] = x
         for i in range(self.nlevel):
             x = tf.keras.layers.Conv2DTranspose(filters=self.root_feature*pow(2,self.nlevel-i-1), 
                                             kernel_size = 2, strides = 2)(x)
             x = tf.concat([uptensor[self.nlevel-i-1],x], axis=-1)
             x = self.layer_down[self.nlevel - i-1](x)
             if self.keep_multi_level_features:
-                self.multi_level_features[i] = x
+                self.multi_level_features[i+1] = x
             #    self.multi_level_features[i] = tf.Identity(x, 
             #            name =self.name +'_mlf_{LV}'.format(LV=i))
         return x

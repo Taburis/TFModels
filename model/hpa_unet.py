@@ -23,16 +23,18 @@ class hpa_unet(tf.keras.Model):
 #                                                   name = 'hpa-unet-seg-head')
         inputs = tf.keras.Input(shape = input_shape, dtype= 'float32')
         x = self.feature_extractor(inputs)
+        feature_size = [v.shape[1] for k,v in self.feature_extractor.multi_level_features.items()][0:-1]
+        features = [v for v in self.feature_extractor.multi_level_features.values()][0:-1]
         self.anchors = rn.Anchor(input_size = input_shape[0], 
                                      base_scale = 9,
-                                     feature_size = [v.shape[1] for k,v in self.feature_extractor.multi_level_features.items()])
+                                     feature_size = feature_size)
         self.head = rn.Head(name = 'hpa-unet-cls-head', 
                                 nclass = 1,
                                 anchor_size = self.anchors.size)
 
         self.feature_alignment_layer = [] # these layers make the fp has the same length of channels
         self.fp = []
-        for v in self.feature_extractor.multi_level_features.values():
+        for v in features:
             layer = tf.keras.layers.Conv2D(filters = 512, kernel_size=1, padding = 'same', strides = 1,
             use_bias = False, activation = 'relu')
             self.feature_alignment_layer.append(layer)
