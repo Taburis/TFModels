@@ -1,4 +1,3 @@
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -26,8 +25,9 @@ class hpa_unet(tf.keras.Model):
         feature_size = [v.shape[1] for k,v in self.feature_extractor.multi_level_features.items()][0:-1]
         features = [v for v in self.feature_extractor.multi_level_features.values()][0:-1]
         self.anchors = rn.Anchor(input_size = input_shape[0], 
-                                     base_scale = 9,
+                                     base_scale = 9*9,
                                      feature_size = feature_size)
+        self.make_training_labels = self.anchors.generate_labels
         self.head = rn.Head(name = 'hpa-unet-cls-head', 
                                 nclass = 1,
                                 anchor_size = self.anchors.size)
@@ -44,4 +44,3 @@ class hpa_unet(tf.keras.Model):
 
     def __call__(self, inputs):
         return self.nn(inputs)
-
