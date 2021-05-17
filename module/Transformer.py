@@ -7,6 +7,14 @@ import tensorflow as tf
 import numpy as np
 from copy import copy
 
+"""
+A transformer moduel collection:
+
+dff : the dimension of the feed-forward layer
+dmodel: the dimension of the inputs
+
+"""
+
 def sinusoid_position_encoder_generator(
        frequency_base = 10000):
     def get_frequency(pos, i, d_model):
@@ -258,7 +266,7 @@ class Decoder(tf.keras.layers.Layer):
         # x.shape == (batch_size, target_seq_len, d_model)
         return x, attention_weights
 
-class Transformer(tf.keras.layers,Layer):
+class Transformer(tf.keras.layers.Layer):
     def __init__(self, num_layers = 6, d_model = 512, num_heads = 8, dff = 2048, 
                    input_vocab_size = 8500, target_vocab_size = 8000,
                    pe_input = 10000, pe_target = 6000, dropout_rate=0.1):
