@@ -33,11 +33,11 @@ def sinusoid_position_encoder_generator(
     return position_encoding_fn
 
 def create_padding_mask(seq):
-  seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
-
-  # add extra dimensions to add the padding
-  # to the attention logits.
-  return seq[:, tf.newaxis, tf.newaxis, :]  # (batch_size, 1, 1, seq_len)
+    seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
+    
+    # add extra dimensions to add the padding
+    # to the attention logits.
+    return seq[:, tf.newaxis, tf.newaxis, :]  # (batch_size, 1, 1, seq_len)
 
 if __name__=='__main__':
     x = tf.constant([[7, 6, 0, 0, 1], [1, 2, 3, 0, 0], [0, 0, 0, 4, 5]])
@@ -94,7 +94,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         
         # add the mask to the scaled tensor.
         if mask is not None:
-          scaled_attention_logits += (mask * -1e9)
+            scaled_attention_logits += (mask * -1e9)
         
         # softmax is normalized on the last axis (seq_len_k) so that the scores
         # add up to 1.
