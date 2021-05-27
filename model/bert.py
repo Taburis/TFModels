@@ -5,6 +5,7 @@ from __future__ import print_function
 
 from config import ParaSet as pset
 import module.Transformer as xtr
+import tensorflow as tf
 #from module import Transfomer as xtr
 import unicodedata
 import six
@@ -33,20 +34,45 @@ def convert_to_unicode(text):
     else:
         raise ValueError("Not running on Python2 or Python 3?")
 
-class tokenizer(object):
-    def __init__(self, uncased = False):
-        self.tokenizer = tf.keras.preprocessing.text.Tokenizer(
-            lower= uncased)
-        self.is_init = False
+def text_preprocess(text):
+    txt = convert_to_unicode(text)
+    # space padding punctuation
+    txt = re.sub('([:@<=>;.,!?""^()])', r' \1 ', txt)
+    # remove extra whitespace
+    txt = re.sub(' +', ' ', txt)
+    txt = txt.strip()
+    # marking the start and end
+    return "".join(['[start] ',txt, ' [end]'])
 
-    def initializer(self, text):
-        text = convert_to_unicode(text)
-        self.tokenizer.fit_on_texts()
+class simple_preprocessor(object):
+    def __init__(self, tokenizer = None,  uncased = True, output_size = None):
+        if not tokenizer:
+            self.tokenizer = tf.keras.preprocessing.text.Tokenizer(
+                        lower= uncased,
+                        filters='_`{|}~\t\n'
+                        )
+        self.is_init = False
+        self.vocab_size = 0
+        self.output_size = output_size
+
+    def fit(self, text):
+        """
+        input is a tensor of string or bytes
+        """
+        txt = [text_preprocess(sen) for sen in text]
+        self.tokenizer.fit_on_texts(txt)
+        self.vocab_size = len(self.tokenizer.word_index)+1
         self.is_init = True
 
-    def __call__(self, text):
-        x = self.tokenizer.texts_to_sequences(text)
-        x = tf.keras.preprocessing.sequence.pad_sequences(x,padding='post')
+    def __call__(self, arrays):
+        """
+        input has to be an array of strings
+        """
+        strings = [text_preprocess(text) for text in arrays]
+        x = self.tokenizer.texts_to_sequences(strings)
+        x = tf.keras.preprocessing.sequence.pad_sequences(x,
+            maxlen = self.output_size,
+            padding='post', truncating = 'post')
         mask = self.padding_mask(x)
         return x, mask
 
@@ -54,11 +80,15 @@ class tokenizer(object):
         x = tf.cast(tf.math.equal(x, 0), tf.float32)
         return x
 
-    def looking_ahead_mask(self,size):
-        mask = 1 - tf.linalg.band_part(tf.ones((size, size)), -1, 0)
-        return mask  # (seq_len, seq_len)
+    def looking_ahead_mask(self):
+        if 'lam' not in self.__dict__.keys():
+            if size == None: 
+                raise ValueError("Please define the output size before calling looking_ahead_mask!")
+            mask = 1 - tf.linalg.band_part(tf.ones((size, size)), -1, 0)
+            self.lam =  mask  # (seq_len, seq_len)
+        return self.lam
 
-class model(tf.keras.Model):
+class config(pset):
     """
         the encoder cfg is a dict with option:
         L: number of layeres
@@ -66,24 +96,54 @@ class model(tf.keras.Model):
         A: number of attension heads
         dff: depth of hidden FF net, default will be 1024
         dropout_rate: drop rate, 0.1 as default
-        input_vocab_size: the input vocabulary size, get from the tokenizer
-        maximum_position_encoding
         positional_encoding: object for encoding the position information.
                          The default sinusoid_position_encoder will be used
                          if this part is missing.
     """
-    def __init__(encoder_cfg, **kwargs):
+
+    def __init__(self,
+                 input_size,
+                 L= 12, H = 768, A= 12,
+                 dff = 1024,
+                 dropout_rate = 0.1,
+                 preprocessor = None,
+                 maximum_position_encoding = 10000
+                 ):
+        super(config, self).__init__()
+
+        self.encoder_cfg = pset(num_layers = L, d_model = H, num_heads = A, 
+                                dff = dff,
+                                dropout_rate = dropout_rate,
+                                positional_encoding = xtr.sinusoid_position_encoder_generator(
+                                maximum_position_encoding),
+                                maximum_position_encoding = maximum_position_encoding,
+                                input_vocab_size = None #get from preprocessor
+                               )
+
+
+class model(tf.keras.Model):
+    """
+    preprocessor: The preprocessor used in the model, tokenizing the string input into
+                      sequences.
+            input_vocab_size: the input vocabulary size get from, needed for embedding layer
+    """
+    def __init__(self, bert_cfg, preprocessor, training = True, **kwargs):
         super(model, self).__init__(**kwargs)
         self.cfg = bert_cfg
-        self.encoder_cfg = bert_cfg.clone()
-        self.encoder_cfg['d_model'] = self.encoder_cfg.pop('H')
-        self.encoder_cfg['num_heads'] = self.encoder_cfg.pop('A')
-        self.encoder_cfg['num_layers'] = self.encoder_cfg.pop('L')
-        if not self.encoder['positional_encoding']: 
-            self.encoder_cfg['positional_encoding'] = xtr.sinusoid_position_encoder_generator(
-                    self.encoder_cfg['maximum_position_encoding'])
-   
-    def build(self):
-        xtr.Encoder(**encoder_cfg)
+        self.preprocessor = preprocessor
+        self.encoder_cfg = bert_cfg.encoder_cfg
+        if not self.preprocessor.is_init: 
+            raise ValueError('ERROR: BERT model: Preprocessor has NOT been initiated yet!')
+        self.encoder_cfg.update({'input_vocab_size':self.preprocessor.vocab_size})
+        if not self.encoder_cfg['input_vocab_size']:
+            raise ValueError('ERROR: BERT model: input_vocab_size can not be None!')
 
-       
+        self.encoder = xtr.Encoder(**(self.encoder_cfg))
+
+    def build_model(self):
+        """ return a keras model object"""
+        text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text_input')
+        x,m = self.preprocessor(text_input)
+        output = self.encoder(x, training, m)
+        return tf.Model(text_input, output)
+
