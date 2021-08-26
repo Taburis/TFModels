@@ -1,5 +1,5 @@
 
-import layers as xlayers
+import TFModels.module.layers as xlayers
 import tensorflow as tf
 
 def sequential(nlayer, module, cfg, trainable = True):
@@ -13,7 +13,7 @@ def sequential(nlayer, module, cfg, trainable = True):
         return x
     return sequential_block_imp
 
-class sequential(tf.keras.layer):
+class sequential(tf.keras.layers.Layer):
     """ stack layers together into a keras layer
         input:
              layers = [layer1, layer2, ...]
@@ -25,7 +25,7 @@ class sequential(tf.keras.layer):
     def add(self, layer):
         self.layers.append(layer)
 
-    def __call__(self, x, trainable = None);
+    def __call__(self, x, trainable = None):
         for layer in self.layers:
             x = layer(x)
         return x
